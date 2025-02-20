@@ -1,0 +1,23 @@
+[project]
+name = "mcp-server-monday"
+version = "0.1.0"
+description = "MCP Server for monday.com"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+ "mcp>=1.2.1",
+ "monday>=2.0.1",
+ "requests>=2.32.3",
+ "ruff>=0.9.6",
+]
+
+[[project.authors]]
+name = "Jovan Sakovic"
+email = "49978945+sakce@users.noreply.github.com"
+
+[build-system]
+requires = [ "hatchling",]
+build-backend = "hatchling.build"
+
+[project.scripts]
+mcp-server-monday = "mcp_server_monday:main"
