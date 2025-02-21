@@ -1,5 +1,7 @@
 # Monday.com MCP server
 
+[![smithery badge](https://smithery.ai/badge/@sakce/mcp-server-monday)](https://smithery.ai/server/@sakce/mcp-server-monday)
+
 MCP Server for monday.com, enabling MCP clients to interact with Monday.com boards and items.
 
 ## Components
@@ -25,6 +27,13 @@ The server implements the following tools:
 ## Quickstart
 
 ### Install
+### Installing via Smithery
+
+To install Monday.com MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@sakce/mcp-server-monday):
+
+```bash
+npx -y @smithery/cli install @sakce/mcp-server-monday --client claude
+```
 
 #### Claude Desktop
 
