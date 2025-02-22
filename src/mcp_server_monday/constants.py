@@ -1,0 +1,8 @@
+import os
+
+MONDAY_API_KEY = os.getenv("MONDAY_API_KEY")
+MONDAY_API_BASE_URL = "https://api.monday.com/v2"
+MONDAY_API_VERSION = os.getenv("MONDAY_API_VERSION", "2025-01")
+
+MONDAY_WORKSPACE_NAME = os.getenv("MONDAY_WORKSPACE_NAME")
+MONDAY_WORKSPACE_URL = f"https://{MONDAY_WORKSPACE_NAME}.monday.com"
