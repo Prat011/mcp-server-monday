@@ -3,7 +3,6 @@
 startCommand:
   type: stdio
   configSchema:
-    # JSON Schema defining the configuration options for the MCP.
     type: object
     required:
       - mondayApiKey
@@ -16,6 +15,5 @@ startCommand:
         type: string
         description: The workspace name for the Monday.com account.
   commandFunction:
-    # A function that produces the CLI command to start the MCP on stdio.
     |-
     (config) => ({command: 'mcp-server-monday', env: {MONDAY_API_KEY: config.mondayApiKey, MONDAY_WORKSPACE_NAME: config.mondayWorkspaceName}})

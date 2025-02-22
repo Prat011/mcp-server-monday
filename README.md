@@ -38,10 +38,10 @@ npx -y @smithery/cli install @sakce/mcp-server-monday --client claude
 #### Claude Desktop
 
 On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
+
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
-<details>
-  <summary>Using uvx</summary>
+##### Using uvx
   ```
   "mcpServers": {
     "monday": {
@@ -56,7 +56,25 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
     }
   }
   ```
-</details>
+
+##### Using Docker
+  ```
+  "mcpServers": {
+    "monday-docker": {
+      "command": "docker",
+      "args": [
+        "run", 
+        "--rm", 
+        "-i", 
+        "-e",
+        "MONDAY_API_KEY=your-monday-api-key",
+        "-e",
+        "MONDAY_WORKSPACE_NAME=your-monday-workspace-name",
+        "sakce/mcp-server-monday"
+      ]
+    }
+  }
+  ```
 
 ## Development
 
