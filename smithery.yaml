@@ -1,26 +1,19 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
 startCommand:
   type: stdio
   configSchema:
     type: object
     required:
-      - monday_api_key
+      - mondayApiKey
+      - mondayWorkspaceName
     properties:
-      monday_api_key:
+      mondayApiKey:
         type: string
-        description: "API key for the Monday.com API."
-      monday_workspace_name:
+        description: The API key for the Monday.com API.
+      mondayWorkspaceName:
         type: string
-        description: "Name of the Monday.com workspace to connect to. First part of the Monday.com URL."
-
-  commandFunction: |-
-    (config) => ({
-      "command": "uv",
-      "args": [
-        "run",
-        "mcp-server-monday"
-      ],
-      "env": {
-        "MONDAY_API_KEY": config.monday_api_key,
-        "MONDAY_WORKSPACE_NAME": config.monday_workspace_name
-      }
-    })
+        description: The workspace name for the Monday.com account.
+  commandFunction:
+    |-
+    (config) => ({command: 'mcp-server-monday', env: {MONDAY_API_KEY: config.mondayApiKey, MONDAY_WORKSPACE_NAME: config.mondayWorkspaceName}})
