@@ -19,6 +19,7 @@ class ToolName(str, Enum):
     LIST_BOARDS = "monday-list-boards"
     LIST_ITEMS_IN_GROUPS = "monday-list-items-in-groups"
     LIST_SUBITEMS_IN_ITEMS = "monday-list-subitems-in-items"
+    GET_BOARD_COLUMNS = "monday-get-board-columns"
 
 
 ServerTools = [
@@ -30,10 +31,31 @@ ServerTools = [
             "properties": {
                 "boardId": {"type": "string"},
                 "itemTitle": {"type": "string"},
-                "groupId": {"type": "string"},
-                "parentItemId": {"type": "string"},
+                "groupId": {
+                    "type": "string",
+                    "description": "If set, parentItemId should not be set.",
+                },
+                "parentItemId": {
+                    "type": "string",
+                    "description": "If set, groupId should not be set.",
+                },
+                "column_values": {
+                    "type": "object",
+                    "description": "Dictionary of column values to set {column_id: value}",
+                },
             },
             "required": ["boardId", "itemTitle"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.GET_BOARD_COLUMNS,
+        description="Get the Columns of a Monday.com Board.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "boardId": {"type": "string"},
+            },
+            "required": ["boardId"],
         },
     ),
     types.Tool(
@@ -113,40 +135,44 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
             match name:
                 case ToolName.CREATE_ITEM:
                     return handle_monday_create_item(
-                        arguments.get("boardId"),
-                        arguments.get("itemTitle"),
-                        arguments.get("groupId"),
-                        arguments.get("parentItemId"),
-                        monday_client,
+                        boardId=arguments.get("boardId"),
+                        itemTitle=arguments.get("itemTitle"),
+                        groupId=arguments.get("groupId"),
+                        parentItemId=arguments.get("parentItemId"),
+                        column_values=arguments.get("column_values"),
+                        monday_client=monday_client,
                     )
-
+                case ToolName.GET_BOARD_COLUMNS:
+                    return handle_monday_get_board_columns(
+                        boardId=arguments.get("boardId"), monday_client=monday_client
+                    )
                 case ToolName.GET_BOARD_GROUPS:
                     return handle_monday_get_board_groups(
-                        arguments.get("boardId"), monday_client
+                        boardId=arguments.get("boardId"), monday_client=monday_client
                     )
 
                 case ToolName.CREATE_UPDATE:
                     return handle_monday_create_update(
-                        arguments.get("itemId"),
-                        arguments.get("updateText"),
-                        monday_client,
+                        itemId=arguments.get("itemId"),
+                        updateText=arguments.get("updateText"),
+                        monday_client=monday_client,
                     )
 
                 case ToolName.LIST_BOARDS:
-                    return handle_monday_list_boards(monday_client)
+                    return handle_monday_list_boards(monday_client=monday_client)
 
                 case ToolName.LIST_ITEMS_IN_GROUPS:
                     return handle_monday_list_items_in_groups(
-                        arguments.get("boardId"),
-                        arguments.get("groupIds"),
-                        arguments.get("limit"),
-                        arguments.get("cursor"),
-                        monday_client,
+                        boardId=arguments.get("boardId"),
+                        groupIds=arguments.get("groupIds"),
+                        limit=arguments.get("limit"),
+                        cursor=arguments.get("cursor"),
+                        monday_client=monday_client,
                     )
 
                 case ToolName.LIST_SUBITEMS_IN_ITEMS:
                     return handle_monday_list_subitems_in_items(
-                        arguments.get("itemIds"), monday_client
+                        itemIds=arguments.get("itemIds"), monday_client=monday_client
                     )
 
                 case _:
@@ -163,6 +189,7 @@ def handle_monday_create_item(
     monday_client: MondayClient,
     groupId: Optional[str] = None,
     parentItemId: Optional[str] = None,
+    column_values: Optional[dict] = None,
 ) -> list[types.TextContent]:
     """Create a new item in a Monday.com Board. Optionally, specify the parent Item ID to create a Sub-item."""
     if parentItemId is None and groupId is not None:
@@ -170,21 +197,39 @@ def handle_monday_create_item(
             board_id=boardId,
             group_id=groupId,
             item_name=itemTitle,
+            column_values=column_values,
         )
     elif parentItemId is not None and groupId is None:
         response = monday_client.items.create_subitem(
             parent_item_id=parentItemId,
             subitem_name=itemTitle,
+            column_values=column_values,
         )
+    else:
+        return [
+            types.TextContent(
+                type="text",
+                text="You can set either groupId or parentItemId argument, but not both.",
+            )
+        ]
 
-    data = response["data"]
-    item_url = f"{MONDAY_WORKSPACE_URL}/boards/{boardId}/pulses/{data.get('create_item').get('id') if parentItemId is None else data.get('create_subitem').get('id')}"
-    return [
-        types.TextContent(
-            type="text",
-            text=f"Created a new Monday {'' if parentItemId is None else 'sub-'}item. URL: {item_url}",
-        )
-    ]
+    try:
+        data = response["data"]
+        id_key = "create_item" if parentItemId is None else "create_subitem"
+        item_url = f"{MONDAY_WORKSPACE_URL}/boards/{boardId}/pulses/{data.get(id_key).get('id')}"
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Created a new Monday item. URL: {item_url}",
+            )
+        ]
+    except Exception as e:
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Error creating Monday item: {e}",
+            )
+        ]
 
 
 def handle_monday_get_board_groups(
@@ -196,6 +241,30 @@ def handle_monday_get_board_groups(
         types.TextContent(
             type="text",
             text=f"Got the groups of a Monday board. {json.dumps(response['data'])}",
+        )
+    ]
+
+
+def handle_monday_get_board_columns(
+    boardId: str, monday_client: MondayClient
+) -> list[types.TextContent]:
+    """Get the Columns of a Monday.com Board."""
+    query = f"""
+        query {{
+            boards(ids: {boardId}) {{
+                columns {{
+                    id
+                    title
+                    type
+                }}
+            }}
+        }}
+    """
+    response = monday_client.custom._query(query)
+    return [
+        types.TextContent(
+            type="text",
+            text=f"Got the columns of a Monday board. {json.dumps(response)}",
         )
     ]
 
@@ -260,8 +329,8 @@ def handle_monday_list_items_in_groups(
             items_page ({items_page_params}) {{
                 cursor
                 items {{
-                    id 
-                    name 
+                    id
+                    name
                     column_values {{
                         id
                         text
