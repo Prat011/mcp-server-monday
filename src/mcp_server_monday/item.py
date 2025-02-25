@@ -66,7 +66,7 @@ def handle_monday_list_subitems_in_items(
     formatted_item_ids = ", ".join(itemIds)
     get_subitems_in_item_query = f"""query
         {{
-            items ([{formatted_item_ids}]) {{
+            items (ids: [{formatted_item_ids}]) {{
                 subitems {{
                     id
                     name
