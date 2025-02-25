@@ -1,6 +1,6 @@
 [project]
 name = "mcp-server-monday"
-version = "0.1.2"
+version = "0.2.0"
 description = "MCP Server for monday.com"
 readme = "README.md"
 requires-python = ">=3.10"
