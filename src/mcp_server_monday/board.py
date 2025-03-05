@@ -4,7 +4,7 @@ from mcp import types
 from monday import MondayClient
 
 
-def handle_monday_get_board_groups(
+async def handle_monday_get_board_groups(
     boardId: str, monday_client: MondayClient
 ) -> list[types.TextContent]:
     """Get the Groups of a Monday.com Board."""
@@ -17,7 +17,7 @@ def handle_monday_get_board_groups(
     ]
 
 
-def handle_monday_get_board_columns(
+async def handle_monday_get_board_columns(
     boardId: str, monday_client: MondayClient
 ) -> list[types.TextContent]:
     """Get the Columns of a Monday.com Board."""
@@ -41,7 +41,7 @@ def handle_monday_get_board_columns(
     ]
 
 
-def handle_monday_list_boards(
+async def handle_monday_list_boards(
     monday_client: MondayClient, limit: int = 100
 ) -> list[types.TextContent]:
     """List all available Monday.com boards"""

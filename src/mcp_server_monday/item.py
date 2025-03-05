@@ -9,7 +9,7 @@ from monday import MondayClient
 from mcp_server_monday.constants import MONDAY_WORKSPACE_URL
 
 
-def handle_monday_list_items_in_groups(
+async def handle_monday_list_items_in_groups(
     boardId: str,
     groupIds: list[str],
     monday_client: MondayClient,
@@ -59,7 +59,7 @@ def handle_monday_list_items_in_groups(
     ]
 
 
-def handle_monday_list_subitems_in_items(
+async def handle_monday_list_subitems_in_items(
     itemIds: list[str],
     monday_client: MondayClient,
 ) -> list[types.TextContent]:
@@ -91,7 +91,7 @@ def handle_monday_list_subitems_in_items(
     ]
 
 
-def handle_monday_create_item(
+async def handle_monday_create_item(
     boardId: str,
     itemTitle: str,
     monday_client: MondayClient,
@@ -140,7 +140,7 @@ def handle_monday_create_item(
         ]
 
 
-def handle_monday_update_item(
+async def handle_monday_update_item(
     boardId: str,
     itemId: str,
     columnValues: dict[str],
@@ -156,12 +156,11 @@ def handle_monday_update_item(
     ]
 
 
-def handle_monday_create_update_on_item(
+async def handle_monday_create_update_on_item(
     itemId: str,
     updateText: str,
     monday_client: MondayClient,
 ) -> list[types.TextContent]:
-    """Create an update (comment) on a Monday.com item."""
     monday_client.updates.create_update(item_id=itemId, update_value=updateText)
     return [
         types.TextContent(

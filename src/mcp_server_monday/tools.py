@@ -186,7 +186,7 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
         try:
             match name:
                 case ToolName.CREATE_ITEM:
-                    return handle_monday_create_item(
+                    return await handle_monday_create_item(
                         boardId=arguments.get("boardId"),
                         itemTitle=arguments.get("itemTitle"),
                         groupId=arguments.get("groupId"),
@@ -195,23 +195,23 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                         monday_client=monday_client,
                     )
                 case ToolName.GET_BOARD_COLUMNS:
-                    return handle_monday_get_board_columns(
+                    return await handle_monday_get_board_columns(
                         boardId=arguments.get("boardId"), monday_client=monday_client
                     )
                 case ToolName.GET_BOARD_GROUPS:
-                    return handle_monday_get_board_groups(
+                    return await handle_monday_get_board_groups(
                         boardId=arguments.get("boardId"), monday_client=monday_client
                     )
 
                 case ToolName.CREATE_UPDATE:
-                    return handle_monday_create_update_on_item(
+                    return await handle_monday_create_update_on_item(
                         itemId=arguments.get("itemId"),
                         updateText=arguments.get("updateText"),
                         monday_client=monday_client,
                     )
 
                 case ToolName.UPDATE_ITEM:
-                    return handle_monday_update_item(
+                    return await handle_monday_update_item(
                         boardId=arguments.get("boardId"),
                         itemId=arguments.get("itemId"),
                         columnValues=arguments.get("columnValues"),
@@ -219,10 +219,10 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                     )
 
                 case ToolName.LIST_BOARDS:
-                    return handle_monday_list_boards(monday_client=monday_client)
+                    return await handle_monday_list_boards(monday_client=monday_client)
 
                 case ToolName.LIST_ITEMS_IN_GROUPS:
-                    return handle_monday_list_items_in_groups(
+                    return await handle_monday_list_items_in_groups(
                         boardId=arguments.get("boardId"),
                         groupIds=arguments.get("groupIds"),
                         limit=arguments.get("limit"),
@@ -231,7 +231,7 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                     )
 
                 case ToolName.LIST_SUBITEMS_IN_ITEMS:
-                    return handle_monday_list_subitems_in_items(
+                    return await handle_monday_list_subitems_in_items(
                         itemIds=arguments.get("itemIds"), monday_client=monday_client
                     )
 
