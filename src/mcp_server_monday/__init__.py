@@ -1,6 +1,7 @@
 import asyncio
 
 from . import server
+from . import document
 
 
 def main():
@@ -8,4 +9,4 @@ def main():
     asyncio.run(server.main())
 
 
-__all__ = ["main", "server"]
+__all__ = ["main", "server", "document"]
