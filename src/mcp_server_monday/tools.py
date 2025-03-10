@@ -11,6 +11,15 @@ from mcp_server_monday.board import (
     handle_monday_get_board_groups,
     handle_monday_list_boards,
 )
+from mcp_server_monday.document import (
+    handle_monday_get_item_updates,
+    handle_monday_get_docs,
+    handle_monday_get_doc_content,
+    handle_monday_create_doc,
+    handle_monday_add_doc_block,
+    handle_monday_get_item_files,
+    handle_monday_get_update_files,
+)
 from mcp_server_monday.item import (
     handle_monday_create_item,
     handle_monday_create_update_on_item,
@@ -32,6 +41,15 @@ class ToolName(str, Enum):
     CREATE_UPDATE = "monday-create-update"
     LIST_ITEMS_IN_GROUPS = "monday-list-items-in-groups"
     LIST_SUBITEMS_IN_ITEMS = "monday-list-subitems-in-items"
+    GET_ITEM_UPDATES = "monday-get-item-updates"
+    
+    GET_DOCS = "monday-get-docs"
+    GET_DOC_CONTENT = "monday-get-doc-content"
+    CREATE_DOC = "monday-create-doc"
+    ADD_DOC_BLOCK = "monday-add-doc-block"
+    
+    GET_ITEM_FILES = "monday-get-item-files"
+    GET_UPDATE_FILES = "monday-get-update-files"
 
 
 ServerTools = [
@@ -171,6 +189,131 @@ ServerTools = [
             "required": ["itemIds"],
         },
     ),
+    types.Tool(
+        name=ToolName.GET_ITEM_UPDATES,
+        description="Get updates for a specific item in Monday.com",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "ID of the Monday.com item to get updates for.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of updates to retrieve. Default is 25.",
+                },
+            },
+            "required": ["itemId"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.GET_DOCS,
+        description="Get a list of documents from Monday.com, optionally filtered by folder",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of documents to retrieve. Default is 25.",
+                },
+                "folder_id": {
+                    "type": "string",
+                    "description": "Optional folder ID to filter documents by.",
+                },
+            },
+        },
+    ),
+    types.Tool(
+        name=ToolName.GET_DOC_CONTENT,
+        description="Get the content of a specific document by ID",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "doc_id": {
+                    "type": "string",
+                    "description": "ID of the Monday.com document to retrieve.",
+                },
+            },
+            "required": ["doc_id"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.CREATE_DOC,
+        description="Create a new document in Monday.com",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "description": "Title of the document to create.",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Content of the document to create.",
+                },
+                "folder_id": {
+                    "type": "string",
+                    "description": "Optional folder ID to create the document in.",
+                },
+            },
+            "required": ["title", "content"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.ADD_DOC_BLOCK,
+        description="Add a block to a document",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "doc_id": {
+                    "type": "string",
+                    "description": "ID of the Monday.com document to add a block to.",
+                },
+                "block_type": {
+                    "type": "string",
+                    "description": "Type of block to add (normal_text, bullet_list, numbered_list, heading, divider, etc.).",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "Content of the block to add.",
+                },
+                "after_block_id": {
+                    "type": "string",
+                    "description": "Optional ID of the block to add this block after.",
+                },
+            },
+            "required": ["doc_id", "block_type", "content"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.GET_ITEM_FILES,
+        description="Get files (PDFs, documents, images, etc.) attached to a Monday.com item",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "ID of the Monday.com item to get files from.",
+                },
+            },
+            "required": ["itemId"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.GET_UPDATE_FILES,
+        description="Get files (PDFs, documents, images, etc.) attached to a specific update in Monday.com",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "updateId": {
+                    "type": "string",
+                    "description": "ID of the Monday.com update to get files from.",
+                },
+            },
+            "required": ["updateId"],
+        },
+    ),
 ]
 
 
@@ -233,6 +376,55 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                 case ToolName.LIST_SUBITEMS_IN_ITEMS:
                     return await handle_monday_list_subitems_in_items(
                         itemIds=arguments.get("itemIds"), monday_client=monday_client
+                    )
+
+                case ToolName.GET_ITEM_UPDATES:
+                    return await handle_monday_get_item_updates(
+                        itemId=arguments.get("itemId"),
+                        limit=arguments.get("limit", 25),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.GET_DOCS:
+                    return await handle_monday_get_docs(
+                        limit=arguments.get("limit", 25),
+                        folder_id=arguments.get("folder_id"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.GET_DOC_CONTENT:
+                    return await handle_monday_get_doc_content(
+                        doc_id=arguments.get("doc_id"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.CREATE_DOC:
+                    return await handle_monday_create_doc(
+                        title=arguments.get("title"),
+                        content=arguments.get("content"),
+                        folder_id=arguments.get("folder_id"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.ADD_DOC_BLOCK:
+                    return await handle_monday_add_doc_block(
+                        doc_id=arguments.get("doc_id"),
+                        block_type=arguments.get("block_type"),
+                        content=arguments.get("content"),
+                        after_block_id=arguments.get("after_block_id"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.GET_ITEM_FILES:
+                    return await handle_monday_get_item_files(
+                        itemId=arguments.get("itemId"),
+                        monday_client=monday_client,
+                    )
+                
+                case ToolName.GET_UPDATE_FILES:
+                    return await handle_monday_get_update_files(
+                        updateId=arguments.get("updateId"),
+                        monday_client=monday_client,
                     )
 
                 case _:
