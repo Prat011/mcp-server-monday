@@ -4,6 +4,10 @@
 
 MCP Server for monday.com, enabling MCP clients to interact with Monday.com boards and items.
 
+<a href="https://glama.ai/mcp/servers/vobfpuod5x">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/vobfpuod5x/badge" alt="Monday.com Server MCP server" />
+</a>
+
 ## Components
 
 ### Tools
