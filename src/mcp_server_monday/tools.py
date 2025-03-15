@@ -14,6 +14,7 @@ from mcp_server_monday.board import (
 from mcp_server_monday.item import (
     handle_monday_create_item,
     handle_monday_create_update_on_item,
+    handle_monday_get_item_by_id,
     handle_monday_list_items_in_groups,
     handle_monday_list_subitems_in_items,
     handle_monday_update_item,
@@ -32,6 +33,7 @@ class ToolName(str, Enum):
     CREATE_UPDATE = "monday-create-update"
     LIST_ITEMS_IN_GROUPS = "monday-list-items-in-groups"
     LIST_SUBITEMS_IN_ITEMS = "monday-list-subitems-in-items"
+    GET_ITEM_BY_ID = "monday-get-items-by-id"
 
 
 ServerTools = [
@@ -63,6 +65,20 @@ ServerTools = [
                 },
             },
             "required": ["boardId", "itemTitle"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.GET_ITEM_BY_ID,
+        description="Fetch specific Monday.com item by its ID",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "ID of the Monday.com item to fetch.",
+                },
+            },
+            "required": ["itemId"],
         },
     ),
     types.Tool(
@@ -235,6 +251,10 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                         itemIds=arguments.get("itemIds"), monday_client=monday_client
                     )
 
+                case ToolName.GET_ITEMS_BY_ID:
+                    return await handle_monday_get_item_by_id(
+                        itemIds=arguments.get("itemId"), monday_client=monday_client
+                    )
                 case _:
                     raise ValueError(f"Undefined behaviour for tool: {name}")
 

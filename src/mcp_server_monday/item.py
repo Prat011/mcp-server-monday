@@ -39,6 +39,10 @@ async def handle_monday_list_items_in_groups(
                 items {{
                     id
                     name
+                    updates {{
+                        id
+                        body
+                    }}
                     column_values {{
                         id
                         text
@@ -72,6 +76,10 @@ async def handle_monday_list_subitems_in_items(
                     name
                     parent_item {{
                         id
+                    }}
+                    updates {{
+                        id
+                        body
                     }}
                     column_values {{
                         id
@@ -167,3 +175,26 @@ async def handle_monday_create_update_on_item(
             type="text", text=f"Created new update on Monday.com item: {updateText}"
         )
     ]
+
+
+async def handle_monday_get_item_by_id(
+    itemId: str,
+    monday_client: MondayClient,
+) -> list[types.TextContent]:
+    """Fetch specific Monday.com items by their IDs"""
+    try:
+        response = monday_client.items.fetch_items_by_id(ids=itemId)
+
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Monday.com items: {json.dumps(response)}",
+            )
+        ]
+    except Exception as e:
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Error fetching Monday.com items: {e}",
+            )
+        ]
