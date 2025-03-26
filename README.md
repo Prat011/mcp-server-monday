@@ -16,6 +16,11 @@ The server implements the following tools:
 - `monday-list-boards`: Lists all available Monday.com boards
 - `monday-list-items-in-groups`: Lists all items in specified groups of a Monday.com board
 - `monday-list-subitems-in-items`: Lists all sub-items for given Monday.com items
+- `monday-create-board`: Creates a new Monday.com board
+- `monday-create-board-group`: Creates a new group in a Monday.com board
+- `monday-move-item-to-group`: Moves a Monday.com item to a different group
+- `monday-delete-item`: Deletes a Monday.com item
+- `monday-archive-item`: Archives a Monday.com item
 
 
 ## Setup
