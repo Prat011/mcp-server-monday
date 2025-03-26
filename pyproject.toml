@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [[project.authors]]
-name = "Jovan Sakovic"
+name = "Max Shmaxi Gorelik"
 
 [build-system]
 requires = [ "hatchling",]

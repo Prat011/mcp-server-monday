@@ -9,7 +9,7 @@ from monday import MondayClient
 from mcp_server_monday.board import (
     handle_monday_get_board_columns,
     handle_monday_get_board_groups,
-    handle_monday_list_boards,
+    handle_monday_list_boards, handle_monday_create_board, handle_monday_create_new_board_group,
 )
 from mcp_server_monday.item import (
     handle_monday_create_item,
@@ -17,23 +17,30 @@ from mcp_server_monday.item import (
     handle_monday_get_item_by_id,
     handle_monday_list_items_in_groups,
     handle_monday_list_subitems_in_items,
-    handle_monday_update_item,
+    handle_monday_update_item, handle_monday_move_item_to_group, handle_monday_delete_item, handle_monday_archive_item,
 )
 
 logger = logging.getLogger("mcp-server-monday")
 
 
 class ToolName(str, Enum):
+    # Boards
     LIST_BOARDS = "monday-list-boards"
     GET_BOARD_GROUPS = "monday-get-board-groups"
     GET_BOARD_COLUMNS = "monday-get-board-columns"
+    CREATE_BOARD = "monday-create-board"
+    CREATE_BOARD_GROUP = "monday-create-board-group"
 
+    # Items
     CREATE_ITEM = "monday-create-item"
     UPDATE_ITEM = "monday-update-item"
     CREATE_UPDATE = "monday-create-update"
     LIST_ITEMS_IN_GROUPS = "monday-list-items-in-groups"
     LIST_SUBITEMS_IN_ITEMS = "monday-list-subitems-in-items"
     GET_ITEM_BY_ID = "monday-get-items-by-id"
+    MOVE_ITEM_TO_GROUP = "monday-move-item-to-group"
+    DELETE_ITEM = "monday-delete-item"
+    ARCHIVE_ITEM = "monday-archive-item"
 
 
 ServerTools = [
@@ -187,6 +194,88 @@ ServerTools = [
             "required": ["itemIds"],
         },
     ),
+    types.Tool(
+        name=ToolName.CREATE_BOARD,
+        description="Create a new Monday.com board",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "board_name": {
+                    "type": "string",
+                    "description": "Name of the Monday.com board to create",
+                },
+                "board_kind": {
+                    "type": "string",
+                    "description": "Kind of the Monday.com board to create (public, private, shareable). Default is public.",
+                },
+            },
+            "required": ["board_name"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.CREATE_BOARD_GROUP,
+        description="Create a new group in a Monday.com board",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "boardId": {
+                    "type": "string",
+                    "description": "Monday.com Board ID that the group will be created in.",
+                },
+                "groupName": {
+                    "type": "string",
+                    "description": "Name of the group to create.",
+                },
+            },
+            "required": ["boardId", "groupName"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.MOVE_ITEM_TO_GROUP,
+        description="Move an item to a group in a Monday.com board",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Monday.com Item ID to move.",
+                },
+                "groupId": {
+                    "type": "string",
+                    "description": "Monday.com Group ID to move the Item to.",
+                },
+            },
+            "required": ["itemId", "groupId"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.DELETE_ITEM,
+        description="Delete an item from a Monday.com board",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Monday.com Item ID to delete.",
+                },
+            },
+            "required": ["itemId"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.ARCHIVE_ITEM,
+        description="Archive an item from a Monday.com board",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string",
+                    "description": "Monday.com Item ID to archive.",
+                },
+            },
+            "required": ["itemId"],
+        },
+    ),
 ]
 
 
@@ -251,10 +340,44 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                         itemIds=arguments.get("itemIds"), monday_client=monday_client
                     )
 
-                case ToolName.GET_ITEMS_BY_ID:
+                case ToolName.GET_ITEM_BY_ID:
                     return await handle_monday_get_item_by_id(
-                        itemIds=arguments.get("itemId"), monday_client=monday_client
+                        itemId=arguments.get("itemId"), monday_client=monday_client
                     )
+
+                case ToolName.CREATE_BOARD:
+                    return await handle_monday_create_board(
+                        board_name=arguments.get("board_name"),
+                        board_kind=arguments.get("board_kind"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.CREATE_BOARD_GROUP:
+                    return await handle_monday_create_new_board_group(
+                        board_id=arguments.get("boardId"),
+                        group_name=arguments.get("groupName"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.MOVE_ITEM_TO_GROUP:
+                    return await handle_monday_move_item_to_group(
+                        monday_client=monday_client,
+                        item_id=arguments.get("itemId"),
+                        group_id=arguments.get("groupId"),
+                    )
+
+                case ToolName.DELETE_ITEM:
+                    return await handle_monday_delete_item(
+                        monday_client=monday_client,
+                        item_id=arguments.get("itemId"),
+                    )
+
+                case ToolName.ARCHIVE_ITEM:
+                    return await handle_monday_archive_item(
+                        monday_client=monday_client,
+                        item_id=arguments.get("itemId"),
+                    )
+
                 case _:
                     raise ValueError(f"Undefined behaviour for tool: {name}")
 

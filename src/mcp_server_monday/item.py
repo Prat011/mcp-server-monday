@@ -178,7 +178,7 @@ async def handle_monday_create_update_on_item(
 
 
 async def handle_monday_get_item_by_id(
-    itemId: str,
+    itemId: list[str],
     monday_client: MondayClient,
 ) -> list[types.TextContent]:
     """Fetch specific Monday.com items by their IDs"""
@@ -198,3 +198,57 @@ async def handle_monday_get_item_by_id(
                 text=f"Error fetching Monday.com items: {e}",
             )
         ]
+
+
+async def handle_monday_move_item_to_group(
+    monday_client: MondayClient, item_id: str, group_id: str
+) -> list[types.TextContent]:
+    """
+    Move an item to a group in a Monday.com board.
+
+    Args:
+        monday_client (MondayClient): The Monday.com client.
+        item_id (str): The ID of the item to move.
+        group_id (str): The ID of the group to move the item to.
+    """
+    item = monday_client.items.move_item_to_group(item_id=item_id, group_id=group_id)
+    return [
+        types.TextContent(
+            type="text", text=f"Moved item {item_id} to group {group_id}. ID of the moved item: {item['data']['move_item_to_group']['id']}"
+        )
+    ]
+
+async def handle_monday_delete_item(
+    monday_client: MondayClient, item_id: str
+) -> list[types.TextContent]:
+    """
+    Delete an item from a Monday.com board.
+
+    Args:
+        monday_client (MondayClient): The Monday.com client.
+        item_id (str): The ID of the item to delete.
+    """
+    item = monday_client.items.delete_item_by_id(item_id=item_id)
+    return [
+        types.TextContent(
+            type="text", text=f"Deleted item {item_id}."
+        )
+    ]
+
+
+async def handle_monday_archive_item(
+    monday_client: MondayClient, item_id: str
+) -> list[types.TextContent]:
+    """
+    Archive an item from a Monday.com board.
+
+    Args:
+        monday_client (MondayClient): The Monday.com client.
+        item_id (str): The ID of the item to archive.
+    """
+    item = monday_client.items.archive_item_by_id(item_id=item_id)
+    return [
+        types.TextContent(
+            type="text", text=f"Archived item {item_id}."
+        )
+    ]
