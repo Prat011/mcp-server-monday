@@ -29,15 +29,28 @@ async def handle_monday_get_board_columns(
                     id
                     title
                     type
+                    settings_str
                 }}
             }}
         }}
     """
     response = monday_client.custom._query(query)
+    for board in response.get("data", {}).get("boards", []):
+        for column in board["columns"]:
+            settings_str = column.pop("settings_str", None)
+            if settings_str:
+                if isinstance(settings_str, str):
+                    try:
+                        settings_obj = json.loads(settings_str)
+                        if "labels" in settings_str:
+                            column["available_labels"] = settings_obj["labels"]
+                    except json.JSONDecodeError:
+                        pass
+
     return [
         types.TextContent(
             type="text",
-            text=f"Got the columns of a Monday.com board. {json.dumps(response)}",
+            text=f"Got the columns of a Monday.com board:\n{json.dumps(response)}",
         )
     ]
 
