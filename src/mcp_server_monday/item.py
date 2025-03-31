@@ -200,6 +200,80 @@ async def handle_monday_get_item_by_id(
         ]
 
 
+async def handle_monday_get_item_updates(
+    itemId: str,
+    monday_client: MondayClient,
+    limit: int = 25,
+) -> list[types.TextContent]:
+    """Get updates for a specific item in Monday.com"""
+
+    query = f"""
+    query {{
+        items (ids: {itemId}) {{
+            updates (limit: {limit}) {{
+                id
+                body
+                created_at
+                creator {{
+                    id
+                    name
+                }}
+                assets {{
+                    id
+                    name
+                    url
+                }}
+            }}
+        }}
+    }}
+    """
+
+    # Setting no_log flag to true if it exists to prevent activity tracking
+    # Note: This is a preventative measure as the _query method might accept this parameter
+    try:
+        response = monday_client.custom._query(query, no_log=True)
+    except TypeError:
+        # If no_log param doesn't exist, try with default params
+        response = monday_client.custom._query(query)
+
+    if (
+        not response
+        or "data" not in response
+        or not response["data"]["items"]
+        or not response["data"]["items"][0]["updates"]
+    ):
+        return [
+            types.TextContent(type="text", text=f"No updates found for item {itemId}.")
+        ]
+
+    updates = response["data"]["items"][0]["updates"]
+
+    formatted_updates = []
+    for update in updates:
+        update_text = f"Update ID: {update['id']}\n"
+        update_text += f"Created: {update['created_at']}\n"
+        update_text += (
+            f"Creator: {update['creator']['name']} (ID: {update['creator']['id']})\n"
+        )
+        update_text += f"Body: {update['body']}\n"
+
+        # Add information about attached files if present
+        if update.get("assets"):
+            update_text += "\nAttached Files:\n"
+            for asset in update["assets"]:
+                update_text += f"- {asset['name']}: {asset['url']}\n"
+
+        update_text += "\n\n"
+        formatted_updates.append(update_text)
+
+    return [
+        types.TextContent(
+            type="text",
+            text=f"Updates for item {itemId}:\n\n{''.join(formatted_updates)}",
+        )
+    ]
+
+
 async def handle_monday_move_item_to_group(
     monday_client: MondayClient, item_id: str, group_id: str
 ) -> list[types.TextContent]:

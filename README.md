@@ -2,7 +2,7 @@
 
 [![smithery badge](https://smithery.ai/badge/@sakce/mcp-server-monday)](https://smithery.ai/server/@sakce/mcp-server-monday)
 
-MCP Server for monday.com, enabling MCP clients to interact with Monday.com boards and items.
+MCP Server for monday.com, enabling MCP clients to interact with Monday.com boards, items, updates, and documents.
 
 ## Components
 
@@ -21,6 +21,11 @@ The server implements the following tools:
 - `monday-move-item-to-group`: Moves a Monday.com item to a different group
 - `monday-delete-item`: Deletes a Monday.com item
 - `monday-archive-item`: Archives a Monday.com item
+- `monday-get-item-updates`: Retrieves updates/comments for a specific item
+- `monday-get-docs`: Lists documents in Monday.com, optionally filtered by folder
+- `monday-get-doc-content`: Retrieves the content of a specific document
+- `monday-create-doc`: Creates a new document in Monday.com
+- `monday-add-doc-block`: Adds a block to an existing document
 
 
 ## Setup
