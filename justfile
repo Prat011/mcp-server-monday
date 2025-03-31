@@ -10,7 +10,7 @@ release version:
   sed -i '' "s/version = \".*\"/version = \"{{version}}\"/" pyproject.toml
   uv sync
   uv build
-  git add pyproject.toml
+  git add pyproject.toml uv.lock
   git commit -m "chore: bump version to {{version}}"
   git tag -a v{{version}} -m "Release version {{version}}"
   git push origin main v{{version}}

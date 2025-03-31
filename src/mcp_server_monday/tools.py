@@ -19,7 +19,6 @@ from mcp_server_monday.document import (
     handle_monday_get_doc_content,
     handle_monday_get_docs,
     handle_monday_get_item_files,
-    handle_monday_get_item_updates,
     handle_monday_get_update_files,
 )
 from mcp_server_monday.item import (
@@ -28,6 +27,7 @@ from mcp_server_monday.item import (
     handle_monday_create_update_on_item,
     handle_monday_delete_item,
     handle_monday_get_item_by_id,
+    handle_monday_get_item_updates,
     handle_monday_list_items_in_groups,
     handle_monday_list_subitems_in_items,
     handle_monday_move_item_to_group,
