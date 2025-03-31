@@ -42,7 +42,7 @@ async def handle_monday_get_board_columns(
                 if isinstance(settings_str, str):
                     try:
                         settings_obj = json.loads(settings_str)
-                        if "labels" in settings_str:
+                        if settings_str.get("labels"):
                             column["available_labels"] = settings_obj["labels"]
                     except json.JSONDecodeError:
                         pass
@@ -85,10 +85,13 @@ async def handle_monday_create_board(
         board_kind (str): The kind of board to create. Must be one of "public" or "private". Defaults to "public".
     """
     actual_board_kind = BoardKind(board_kind)
-    board = monday_client.boards.create_board(board_name=board_name, board_kind=actual_board_kind)
+    board = monday_client.boards.create_board(
+        board_name=board_name, board_kind=actual_board_kind
+    )
     return [
         types.TextContent(
-            type="text", text=f"Created monday board {board_name} of kind {board_kind}. ID of the new board: {board['data']['create_board']['id']}"
+            type="text",
+            text=f"Created monday board {board_name} of kind {board_kind}. ID of the new board: {board['data']['create_board']['id']}",
         )
     ]
 
@@ -107,6 +110,7 @@ async def handle_monday_create_new_board_group(
     group = monday_client.groups.create_group(board_id=board_id, group_name=group_name)
     return [
         types.TextContent(
-            type="text", text=f"Created new group {group_name} in board {board_id}. ID of the new group: {group['data']['create_group']['id']}"
+            type="text",
+            text=f"Created new group {group_name} in board {board_id}. ID of the new group: {group['data']['create_group']['id']}",
         )
     ]
