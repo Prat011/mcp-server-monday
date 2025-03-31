@@ -203,7 +203,7 @@ ServerTools = [
                 "limit": {"type": "integer"},
                 "cursor": {"type": "string"},
             },
-            "required": ["boardId", "groupIds"],
+            "required": ["boardId", "groupIds", "limit"],
         },
     ),
     types.Tool(

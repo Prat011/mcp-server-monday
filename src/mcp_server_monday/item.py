@@ -12,8 +12,8 @@ from mcp_server_monday.constants import MONDAY_WORKSPACE_URL
 async def handle_monday_list_items_in_groups(
     boardId: str,
     groupIds: list[str],
+    limit: int,
     monday_client: MondayClient,
-    limit: int = 100,
     cursor: Optional[str] = None,
 ) -> list[types.TextContent]:
     """List all items in the specified groups of a Monday.com board"""
