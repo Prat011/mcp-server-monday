@@ -42,7 +42,7 @@ async def handle_monday_get_board_columns(
                 if isinstance(settings_str, str):
                     try:
                         settings_obj = json.loads(settings_str)
-                        if settings_str.get("labels"):
+                        if settings_obj.get("labels"):
                             column["available_labels"] = settings_obj["labels"]
                     except json.JSONDecodeError:
                         pass
