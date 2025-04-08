@@ -472,7 +472,10 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                     )
 
                 case ToolName.LIST_BOARDS:
-                    return await handle_monday_list_boards(monday_client=monday_client)
+                    return await handle_monday_list_boards(
+                        monday_client=monday_client,
+                        limit=arguments.get("limit", 100),
+                    )
 
                 case ToolName.LIST_ITEMS_IN_GROUPS:
                     return await handle_monday_list_items_in_groups(
