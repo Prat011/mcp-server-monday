@@ -9,8 +9,7 @@ from mcp.server.models import InitializationOptions
 from monday import MondayClient
 
 from mcp_server_monday.constants import MONDAY_API_KEY
-
-from .tools import (
+from mcp_server_monday.tools import (
     register_tools,
 )
 

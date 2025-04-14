@@ -185,7 +185,11 @@ ServerTools = [
                 "limit": {
                     "type": "integer",
                     "description": "Maximum number of Monday.com Boards to return.",
-                }
+                },
+                "page": {
+                    "type": "integer",
+                    "description": "Page number for pagination.",
+                },
             },
         },
     ),
@@ -319,17 +323,13 @@ ServerTools = [
     ),
     types.Tool(
         name=ToolName.GET_DOCS,
-        description="Get a list of documents from Monday.com, optionally filtered by folder",
+        description="Get a list of documents from Monday.com.",
         inputSchema={
             "type": "object",
             "properties": {
                 "limit": {
                     "type": "integer",
                     "description": "Maximum number of documents to retrieve. Default is 25.",
-                },
-                "folder_id": {
-                    "type": "string",
-                    "description": "Optional folder ID to filter documents by.",
                 },
             },
         },
@@ -539,7 +539,6 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                 case ToolName.GET_DOCS:
                     return await handle_monday_get_docs(
                         limit=arguments.get("limit", 25),
-                        folder_id=arguments.get("folder_id"),
                         monday_client=monday_client,
                     )
 

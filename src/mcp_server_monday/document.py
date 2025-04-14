@@ -157,24 +157,24 @@ async def handle_monday_get_update_files(
 
 
 async def handle_monday_get_docs(
-    monday_client: MondayClient,
-    limit: int = 25,
-    folder_id: Optional[str] = None,
+    monday_client: MondayClient, limit: int
 ) -> list[types.TextContent]:
     """Get a list of documents from Monday.com, optionally filtered by folder"""
 
     # Add folder filter if provided
-    folder_filter = f"filter: {{folder_id: {folder_id}}}" if folder_id else ""
 
     query = f"""
     query {{
-        docs (limit: {limit} {folder_filter}) {{
+        docs (limit: {limit}) {{
             id
             name
             created_at
             workspace_id
-            folder_id
-            user_id
+            doc_folder_id
+            created_by {{
+                id
+                name
+            }}
         }}
     }}
     """
@@ -192,8 +192,8 @@ async def handle_monday_get_docs(
         doc_text += f"Name: {doc['name']}\n"
         doc_text += f"Created: {doc['created_at']}\n"
         doc_text += f"Workspace ID: {doc['workspace_id']}\n"
-        doc_text += f"Folder ID: {doc.get('folder_id', 'None')}\n"
-        doc_text += f"User ID: {doc['user_id']}\n\n"
+        doc_text += f"Folder ID: {doc.get('doc_folder_id', 'None')}\n"
+        doc_text += f"Created by: {doc['created_by']['name']} (ID: {doc['created_by']['id']})\n\n-----\\n\n"
         formatted_docs.append(doc_text)
 
     return [
