@@ -1,11 +1,11 @@
 [project]
 name = "mcp-server-monday"
-version = "0.2.7"
+version = "0.2.8"
 description = "MCP Server for monday.com"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
- "mcp>=1.2.1",
+ "mcp[cli]>=1.2.1",
  "monday>=2.0.1",
  "requests>=2.32.3",
  "ruff>=0.9.6",
