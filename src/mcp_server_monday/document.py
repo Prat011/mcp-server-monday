@@ -205,14 +205,18 @@ async def handle_monday_get_doc_content(
     doc_id: str,
     monday_client: MondayClient,
 ) -> list[types.TextContent]:
-    """Get the content of a specific document by ID"""
+    """Get the content (blocks) of a specific document by ID"""
 
     query = f"""
     query {{
-        docs (ids: [{doc_id}]) {{
+        docs (ids: {doc_id}) {{
             id
             name
-            content
+            blocks {{
+                id
+                type
+                content
+            }}
         }}
     }}
     """
@@ -222,7 +226,7 @@ async def handle_monday_get_doc_content(
     if (
         not response
         or "data" not in response
-        or not response["data"]["docs"]
+        or not response["data"].get("docs")
         or not response["data"]["docs"]
     ):
         return [
@@ -230,11 +234,25 @@ async def handle_monday_get_doc_content(
         ]
 
     doc = response["data"]["docs"][0]
+    blocks = doc.get("blocks", [])
+    if not blocks:
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Document ID: {doc['id']}\nName: {doc['name']}\n\nNo content blocks found.",
+            )
+        ]
+
+    formatted_blocks = []
+    for block in blocks:
+        formatted_blocks.append(
+            f"Block ID: {block['id']}\nType: {block['type']}\nContent: {block['content']}\n"
+        )
 
     return [
         types.TextContent(
             type="text",
-            text=f"Document ID: {doc['id']}\nName: {doc['name']}\n\nContent:\n{doc['content']}",
+            text=f"Document ID: {doc['id']}\nName: {doc['name']}\n\nBlocks:\n\n{''.join(formatted_blocks)}",
         )
     ]
 
