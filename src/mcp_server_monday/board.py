@@ -56,10 +56,10 @@ async def handle_monday_get_board_columns(
 
 
 async def handle_monday_list_boards(
-    monday_client: MondayClient, limit: int
+    monday_client: MondayClient, limit: int, page: int
 ) -> list[types.TextContent]:
     """List all available Monday.com boards"""
-    response = monday_client.boards.fetch_boards(limit=limit)
+    response = monday_client.boards.fetch_boards(limit=limit, page=page)
     boards = response["data"]["boards"]
 
     board_list = "\n".join(

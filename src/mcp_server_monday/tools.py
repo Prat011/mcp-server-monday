@@ -475,6 +475,7 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                     return await handle_monday_list_boards(
                         monday_client=monday_client,
                         limit=arguments.get("limit", 100),
+                        page=arguments.get("page", 1),
                     )
 
                 case ToolName.LIST_ITEMS_IN_GROUPS:
