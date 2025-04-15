@@ -350,7 +350,7 @@ ServerTools = [
     ),
     types.Tool(
         name=ToolName.CREATE_DOC,
-        description="Create a new document in Monday.com",
+        description="Create a new document in Monday.com. Specify either workspace_id (with kind) or board_id (with column_id and item_id) as the location.",
         inputSchema={
             "type": "object",
             "properties": {
@@ -358,16 +358,32 @@ ServerTools = [
                     "type": "string",
                     "description": "Title of the document to create.",
                 },
-                "content": {
-                    "type": "string",
-                    "description": "Content of the document to create.",
+                "workspace_id": {
+                    "type": "integer",
+                    "description": "Workspace ID to create the document in (required if using workspace as location).",
                 },
-                "folder_id": {
+                "kind": {
                     "type": "string",
-                    "description": "Optional folder ID to create the document in.",
+                    "description": "Kind of document (private, public, share). Required if using workspace_id.",
+                },
+                "board_id": {
+                    "type": "integer",
+                    "description": "Board ID to create the document in (required if using board as location).",
+                },
+                "column_id": {
+                    "type": "string",
+                    "description": "Column ID for the board location (required if using board_id).",
+                },
+                "item_id": {
+                    "type": "integer",
+                    "description": "Item ID for the board location (required if using board_id).",
                 },
             },
-            "required": ["title", "content"],
+            "required": ["title"],
+            "oneOf": [
+                {"required": ["workspace_id", "kind"]},
+                {"required": ["board_id", "column_id", "item_id"]},
+            ],
         },
     ),
     types.Tool(
@@ -551,10 +567,13 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
 
                 case ToolName.CREATE_DOC:
                     return await handle_monday_create_doc(
-                        title=arguments.get("title"),
-                        content=arguments.get("content"),
-                        folder_id=arguments.get("folder_id"),
                         monday_client=monday_client,
+                        title=arguments.get("title"),
+                        board_id=arguments.get("board_id"),
+                        column_id=arguments.get("column_id"),
+                        item_id=arguments.get("item_id"),
+                        workspace_id=arguments.get("workspace_id"),
+                        kind=arguments.get("kind"),
                     )
 
                 case ToolName.ADD_DOC_BLOCK:

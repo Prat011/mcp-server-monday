@@ -258,44 +258,78 @@ async def handle_monday_get_doc_content(
 
 
 async def handle_monday_create_doc(
-    title: str,
-    content: str,
     monday_client: MondayClient,
-    folder_id: Optional[str] = None,
+    title: str,
+    workspace_id: Optional[int] = None,
+    board_id: Optional[int] = None,
+    kind: Optional[str] = None,  # For workspace
+    column_id: Optional[str] = None,  # For board
+    item_id: Optional[int] = None,  # For board
 ) -> list[types.TextContent]:
-    """Create a new document in Monday.com"""
+    """Create a new document in Monday.com. Specify either workspace_id (with kind, name) or board_id (with column_id, item_id) as the location."""
 
-    # Escape quotes in content
-    escaped_content = content.replace('"', '\\"')
+    # Build location argument
+    if workspace_id:
+        if not kind:
+            return [
+                types.TextContent(
+                    type="text", text="'kind' is required when using workspace_id."
+                )
+            ]
+        location = f'location: {{workspace: {{ workspace_id: {workspace_id}, name: "{title}", kind: {kind} }} }}'
+    elif board_id:
+        if not column_id or not item_id:
+            return [
+                types.TextContent(
+                    type="text",
+                    text="'column_id' and 'item_id' are required when using board_id.",
+                )
+            ]
+        location = f'location: {{board: {{ board_id: {board_id}, column_id: "{column_id}", item_id: {item_id} }} }}'
+    else:
+        return [
+            types.TextContent(
+                type="text",
+                text="You must provide either workspace_id or board_id to create a document.",
+            )
+        ]
 
-    # Build mutation query
-    folder_param = f", folder_id: {folder_id}" if folder_id else ""
     mutation = f"""
     mutation {{
         create_doc (
-            name: "{title}",
-            content: "{escaped_content}"{folder_param}
+            {location}
         ) {{
             id
-            name
         }}
     }}
     """
 
-    response = monday_client.custom._query(mutation)
+    try:
+        response = monday_client.custom._query(mutation)
 
-    if not response or "data" not in response or not response["data"]["create_doc"]:
-        return [types.TextContent(type="text", text="Failed to create document.")]
+        if (
+            not response
+            or "data" not in response
+            or not response["data"].get("create_doc")
+        ):
+            return [types.TextContent(type="text", text="Failed to create document.")]
 
-    created_doc = response["data"]["create_doc"]
-    doc_url = f"{MONDAY_WORKSPACE_URL}/docs/d/{created_doc['id']}"
+        created_doc = response["data"]["create_doc"]
+        doc_url = f"{MONDAY_WORKSPACE_URL}/docs/{created_doc['id']}"
 
-    return [
-        types.TextContent(
-            type="text",
-            text=f"Document created successfully!\nTitle: {created_doc['name']}\nID: {created_doc['id']}\nURL: {doc_url}",
-        )
-    ]
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Document created successfully!\nTitle: {title}\nID: {created_doc['id']}\nURL: {doc_url}",
+            )
+        ]
+    except Exception as e:
+        return [
+            types.TextContent(
+                type="text",
+                text=f"An error occurred while creating the document: {str(e)}. Response: {json.dumps(response)}",
+            )
+        ]
 
 
 async def handle_monday_add_doc_block(
