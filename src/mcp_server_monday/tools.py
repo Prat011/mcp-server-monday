@@ -32,6 +32,7 @@ from mcp_server_monday.item import (
     handle_monday_list_subitems_in_items,
     handle_monday_move_item_to_group,
     handle_monday_update_item,
+    handle_monday_update_item_name,
 )
 
 logger = logging.getLogger("mcp-server-monday")
@@ -48,6 +49,7 @@ class ToolName(str, Enum):
     # Items
     CREATE_ITEM = "monday-create-item"
     UPDATE_ITEM = "monday-update-item"
+    UPDATE_ITEM_NAME = "monday-update-item-name"
     CREATE_UPDATE = "monday-create-update"
     LIST_ITEMS_IN_GROUPS = "monday-list-items-in-groups"
     LIST_SUBITEMS_IN_ITEMS = "monday-list-subitems-in-items"
@@ -113,7 +115,7 @@ ServerTools = [
     ),
     types.Tool(
         name=ToolName.UPDATE_ITEM,
-        description="Update a Monday.com item's or sub-item's column values.",
+        description="Update a Monday.com item's or sub-item's column values. itemId must be a number not the name of the item. If you get itemId as a string, you need to call another tool to get the item by name first.",
         inputSchema={
             "type": "object",
             "properties": {
@@ -123,7 +125,7 @@ ServerTools = [
                 },
                 "itemId": {
                     "type": "string",
-                    "description": "Monday.com Item or Sub-item ID to update the columns of.",
+                    "description": "Monday.com Item or Sub-item ID to update the columns of. itemId must be a number not the name of the item.",
                 },
                 "columnValues": {
                     "type": "object",
@@ -131,6 +133,32 @@ ServerTools = [
                 },
             },
             "required": ["boardId", "itemId", "columnValues"],
+        },
+    ),
+    types.Tool(
+        name=ToolName.UPDATE_ITEM_NAME,
+        description="Update a Monday.com item's status column by finding the item by name. This tool combines: get board groups, list items, find item by name, and update status.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "boardId": {
+                    "type": "string",
+                    "description": "Monday.com Board ID containing the item.",
+                },
+                "groupId": {
+                    "type": "string", 
+                    "description": "Monday.com Group ID containing the item.",
+                },
+                "itemName": {
+                    "type": "string",
+                    "description": "Name of the item to update (e.g., 'McpTest').",
+                },
+                "statusValue": {
+                    "type": "string",
+                    "description": "Status value to set (e.g., 'Done', 'Working on it').",
+                },
+            },
+            "required": ["boardId", "groupId", "itemName", "statusValue"],
         },
     ),
     types.Tool(
@@ -484,6 +512,15 @@ def register_tools(server: Server, monday_client: MondayClient) -> None:
                         boardId=arguments.get("boardId"),
                         itemId=arguments.get("itemId"),
                         columnValues=arguments.get("columnValues"),
+                        monday_client=monday_client,
+                    )
+
+                case ToolName.UPDATE_ITEM_NAME:
+                    return await handle_monday_update_item_name(
+                        boardId=arguments.get("boardId"),
+                        groupId=arguments.get("groupId"),
+                        itemName=arguments.get("itemName"),
+                        statusValue=arguments.get("statusValue"),
                         monday_client=monday_client,
                     )
 

@@ -320,3 +320,116 @@ async def handle_monday_archive_item(
     """
     monday_client.items.archive_item_by_id(item_id=item_id)
     return [types.TextContent(type="text", text=f"Archived item {item_id}.")]
+
+
+async def handle_monday_update_item_name(
+    boardId: str,
+    groupId: str,
+    itemName: str,
+    statusValue: str,
+    monday_client: MondayClient,
+) -> list[types.TextContent]:
+    """
+    Update a Monday.com item's status column by finding the item by name.
+    This function combines multiple operations:
+    1. List items in the specified group using GraphQL
+    2. Find item by name and extract its ID
+    3. Update the item's status column
+
+    Args:
+        boardId (str): Monday.com Board ID containing the item
+        groupId (str): Monday.com Group ID containing the item
+        itemName (str): Name of the item to update (e.g., 'McpTest')
+        statusValue (str): Status value to set (e.g., 'Done', 'Working on it')
+        monday_client (MondayClient): The Monday.com client
+
+    Returns:
+        list[types.TextContent]: Result of the update operation
+    """
+    try:
+        # Use GraphQL query to find items in the group - reuse existing working code
+        query = f"""
+        query {{
+            boards (ids: {boardId}) {{
+                items_page (
+                    query_params: {{
+                        rules: [
+                            {{column_id: "group", compare_value: ["{groupId}"], operator: any_of}}
+                        ]
+                    }}
+                    limit: 50
+                ) {{
+                    items {{
+                        id
+                        name
+                        column_values {{
+                            id
+                            text
+                            value
+                        }}
+                    }}
+                }}
+            }}
+        }}
+        """
+
+        response = monday_client.custom._query(query)
+        
+        # Check if we got valid data back
+        if not response or not response.get("data", {}).get("boards"):
+            return [
+                types.TextContent(
+                    type="text", text=f"Error: Board {boardId} not found or no data returned"
+                )
+            ]
+
+        boards = response["data"]["boards"]
+        if not boards or not boards[0].get("items_page", {}).get("items"):
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Error: No items found in board {boardId}, group {groupId}",
+                )
+            ]
+
+        # Find the target item by name
+        target_item_id = None
+        items = boards[0]["items_page"]["items"]
+
+        for item in items:
+            if item.get("name") == itemName:
+                target_item_id = item.get("id")
+                break
+
+        if not target_item_id:
+            return [
+                types.TextContent(
+                    type="text",
+                    text=f"Error: Item with name '{itemName}' not found in group {groupId}. Available items: {[item.get('name') for item in items]}",
+                )
+            ]
+
+        # Update the item's status column using the found ID
+        # Monday.com API expects dictionary object, not JSON string
+        column_values = {
+            "status": {"label": statusValue}  # Use label format for status columns
+        }
+
+        update_response = monday_client.items.change_multiple_column_values(
+            board_id=boardId, item_id=target_item_id, column_values=column_values
+        )
+
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Successfully updated item '{itemName}' (ID: {target_item_id}) status to '{statusValue}'. Response: {json.dumps(update_response)}",
+            )
+        ]
+
+    except Exception as e:
+        return [
+            types.TextContent(
+                type="text",
+                text=f"Error updating item '{itemName}': {str(e)}",
+            )
+        ]
