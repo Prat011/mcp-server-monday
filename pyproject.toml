@@ -1,6 +1,6 @@
 [project]
 name = "mcp-server-monday"
-version = "0.2.9"
+version = "0.3.0"
 description = "MCP Server for monday.com"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,20 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.sdist]
 include = [
   "src/mcp_server_monday/*.py",
+]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "uv"
+update_changelog_on_bump = true
+major_version_zero = true
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.6.0",
+    "ruff>=0.9.6"
 ]
 
 [project.scripts]
