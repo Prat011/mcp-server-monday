@@ -1,12 +1,6 @@
 # Monday.com MCP server
 
-[![smithery badge](https://smithery.ai/badge/@sakce/mcp-server-monday)](https://smithery.ai/server/@sakce/mcp-server-monday)
-
-MCP Server for monday.com, enabling MCP clients to interact with Monday.com boards, items, updates, and documents.
-
-<a href="https://glama.ai/mcp/servers/vobfpuod5x">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/vobfpuod5x/badge" alt="Monday.com Server MCP server" />
-</a>
+[MCP Server for monday.com](https://getrube.link/L8Ol7BX), enabling MCP clients to interact with Monday.com boards, items, updates, and documents. 
 
 ## Components
 
@@ -39,6 +33,13 @@ The server implements the following tools:
 
 
 ## Quickstart
+
+## Using Rube
+
+1. Go to (Rube.app)[https://rube.app/]
+2. Install Rube in your preferred client including Cursor, Claude, VS Code, Windsurf etc.,
+3. Complete authentication with Rube
+4. You can now execute actions on Monday.com like creating items, posting updates, moving items
 
 ### Install
 
@@ -83,14 +84,6 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
     }
   }
   ```
-
-#### Using Smithery
-
-To install Monday.com MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@sakce/mcp-server-monday):
-
-```bash
-npx -y @smithery/cli install @sakce/mcp-server-monday --client claude
-```
 
 ## Development
 
